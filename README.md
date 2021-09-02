@@ -32,3 +32,6 @@ esptool -p COM5 -b 460800 --before default_reset --after hard_reset --chip esp32
 esptool -p COM5 -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size detect --flash_freq 40m 0x1000 firmware/test_file_server/build/bootloader/bootloader.bin 0x8000 firmware/test_file_server/build/partition_table/partition-table.bin 0x10000 firmware/test_file_server/build/file_server.bin
  ```
 
+```
+esptool -p COM5 -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size detect --flash_freq 40m 0x1000 firmware/test_sd_card/build/bootloader/bootloader.bin 0x8000 firmware/test_sd_card/build/partition_table/partition-table.bin 0x10000 firmware/test_sd_card/build/sd_card.bin
+ ```
