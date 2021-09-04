@@ -2,15 +2,13 @@
 set(COMPONENT_REQUIRES)
 set(COMPONENT_PRIV_REQUIRES audio_sal audio_hal esp_dispatcher esp_peripherals display_service)
 
-if(CONFIG_AUDIO_BOARD_CUSTOM)
-message(STATUS "Current board name is " CONFIG_AUDIO_BOARD_CUSTOM)
-list(APPEND COMPONENT_ADD_INCLUDEDIRS ./my_board_v1_0 ./my_codec_driver)
+message(STATUS "Current board used is:  ai audio kit")
+list(APPEND COMPONENT_ADD_INCLUDEDIRS ./board ./codec)
 set(COMPONENT_SRCS
-./my_board_v1_0/board.c
-./my_board_v1_0/board_pins_config.c
-./my_codec_driver/new_codec.c
+./board/board.c
+./board/board_pins_config.c
+./codec/ac101.c
 )
-endif()
 
 register_component()
 

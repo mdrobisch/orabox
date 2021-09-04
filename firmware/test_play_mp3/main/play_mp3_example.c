@@ -48,11 +48,11 @@ void app_main(void)
 {
     audio_pipeline_handle_t pipeline;
     audio_element_handle_t i2s_stream_writer, mp3_decoder;
-    esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_INFO);
     ESP_LOGI(TAG, "[ 1 ] Start audio codec chip");
     audio_board_handle_t board_handle = audio_board_init();
-    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
+    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
 
     ESP_LOGI(TAG, "[ 2 ] Create audio pipeline, add all elements to pipeline, and subscribe pipeline event");
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
@@ -75,30 +75,17 @@ void app_main(void)
     audio_pipeline_register(pipeline, i2s_stream_writer, "i2s");
 
     ESP_LOGI(TAG, "[2.4] Link it together [mp3_music_read_cb]-->mp3_decoder-->i2s_stream-->[codec_chip]");
-
-    /**Zl38063 does not support 44.1KHZ frequency, so resample needs to be used to convert files to other rates.
-     * You can transfer to 16kHZ or 48kHZ.
-     */
-#if (CONFIG_ESP_LYRATD_MSC_V2_1_BOARD || CONFIG_ESP_LYRATD_MSC_V2_2_BOARD)
-    rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
-    rsp_cfg.src_rate = 44100;
-    rsp_cfg.src_ch = 2;
-    rsp_cfg.dest_rate = 48000;
-    rsp_cfg.dest_ch = 2;
-    audio_element_handle_t filter = rsp_filter_init(&rsp_cfg);
-    audio_pipeline_register(pipeline, filter, "filter");
-    const char *link_tag[3] = {"mp3", "filter", "i2s"};
-    audio_pipeline_link(pipeline, &link_tag[0], 3);
-#else
     const char *link_tag[2] = {"mp3", "i2s"};
     audio_pipeline_link(pipeline, &link_tag[0], 2);
-#endif
-    ESP_LOGI(TAG, "[ 3 ] Set up  event listener");
+
+    ESP_LOGI(TAG, "[ 3 ] Setup event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
     audio_event_iface_handle_t evt = audio_event_iface_init(&evt_cfg);
 
     ESP_LOGI(TAG, "[3.1] Listening event from all elements of pipeline");
     audio_pipeline_set_listener(pipeline, evt);
+
+    vTaskDelay(1000 / portTICK_PERIOD_MS);	
 
     ESP_LOGI(TAG, "[ 4 ] Start audio_pipeline");
     audio_pipeline_run(pipeline);
@@ -120,13 +107,9 @@ void app_main(void)
                      music_info.sample_rates, music_info.bits, music_info.channels);
 
             audio_element_setinfo(i2s_stream_writer, &music_info);
-
-            /* Es8388 and es8374 and es8311 use this function to set I2S and codec to the same frequency as the music file, and zl38063
-             * does not need this step because the data has been resampled.*/
-#if (CONFIG_ESP_LYRATD_MSC_V2_1_BOARD || CONFIG_ESP_LYRATD_MSC_V2_2_BOARD)
-#else
-            i2s_stream_set_clk(i2s_stream_writer, music_info.sample_rates , music_info.bits, music_info.channels);
-#endif
+            #if (CONFIG_ESP_LYRAT_V4_3_BOARD || CONFIG_ESP_LYRAT_V4_2_BOARD)
+                i2s_stream_set_clk(i2s_stream_writer, music_info.sample_rates , music_info.bits, music_info.channels);
+            #endif
             continue;
         }
         /* Stop when the last pipeline element (i2s_stream_writer in this case) receives stop event */
