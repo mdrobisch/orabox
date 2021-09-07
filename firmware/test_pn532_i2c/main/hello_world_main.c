@@ -30,12 +30,13 @@ void app_main(void)
     
 
     printf("Hello world!\n");
-    init_PN532_I2C(PN532_I2C_SDA, PN532_I2C_SCL, PN532_IRQ, I2C_NUM_0);
+    init_PN532_I2C(PN532_I2C_SDA, PN532_I2C_SCL, PN532_IRQ, I2C_NUM_1);
     SAMConfig();
     getPN532FirmwareVersion();
     while(true) 
     {
-        success = readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 1000);    
+        SAMConfig();
+        success = readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 200);    
         if (success) {
             // Display some basic information about the card
             printf("Found an ISO14443A card\n");
@@ -51,8 +52,12 @@ void app_main(void)
         } else {
             printf("No Card found\n");
         }
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        uid[0] = 0;
+        uid[1] = 0;
+        uid[2] = 0;
+        uid[3] = 0;
+        uid[4] = 0;
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     printf("Restarting now.\n");
     fflush(stdout);

@@ -21,7 +21,8 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include "driver/i2c.h"
+#include "driver/uart.h"
+#include "driver/gpio.h"
 
 #define PN532_PREAMBLE                      (0x00)
 #define PN532_STARTCODE1                    (0x00)
@@ -147,7 +148,7 @@
 #define IRQ_WAIT_TIMEOUT										1000						//ms
 
 //Initialize the I2C the the reset/IRQ pint
-bool init_PN532_I2C(uint8_t sda, uint8_t scl,uint8_t irq, i2c_port_t i2c_port_number);
+bool init_PN532_UART (uint8_t tx, uint8_t rx, uint8_t irq, uart_port_t uart_port_number);
 
 // Generic PN532 functions
 bool SAMConfig(void);

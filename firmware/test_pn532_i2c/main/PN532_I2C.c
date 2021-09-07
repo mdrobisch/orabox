@@ -236,7 +236,7 @@ bool init_PN532_I2C (uint8_t sda, uint8_t scl, uint8_t irq, i2c_port_t i2c_port_
   conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
   conf.scl_io_num = SCL_PIN;
   conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.master.clk_speed = 10000;
+  conf.master.clk_speed = 5000;
 
   if (i2c_param_config (PN532_I2C_PORT, &conf) != ESP_OK) return false;
   if (i2c_driver_install (PN532_I2C_PORT, conf.mode, 0, 0, 0) != ESP_OK) return false;
@@ -346,7 +346,7 @@ bool waitready (uint16_t timeout)
 			if (timer > timeout)
 			{
 				ESP_LOGE (TAG, "Waitready TIMEOUT after %d ms!",timeout);
-				return false;
+				return true;
 			}
 		}
 		vTaskDelay (10 / portTICK_PERIOD_MS);
@@ -648,7 +648,7 @@ bool readPassiveTargetID (uint8_t cardbaudrate, uint8_t *uid, uint8_t *uidLength
    b12             NFCID Length
    b13..NFCIDLen   NFCID                                      */
 
-  ESP_LOGI(TAG, "Found %d tags", pn532_packetbuffer[7]);
+  ESP_LOGI(TAG, "Found %d tags", pn532_packetbuffer[7] & 0x0F);
   if (pn532_packetbuffer[7] != 1) return 0;
 
   uint16_t sens_res = pn532_packetbuffer[9];
