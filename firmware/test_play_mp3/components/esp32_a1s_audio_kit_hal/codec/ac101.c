@@ -207,8 +207,8 @@ esp_err_t ac101_start(ac_module_t mode)
     	//* Enable Speaker output
 		res |= ac101_write_register(SPKOUT_CTRL, 0xeabd);
 		vTaskDelay(100 / portTICK_PERIOD_MS);
-		ac101_set_output_volume(120);
-		
+		ac101_set_output_volume(100);
+		 
 		vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
